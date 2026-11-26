@@ -14,6 +14,7 @@ import {
   Manrope_700Bold,
 } from "@expo-google-fonts/manrope";
 import * as SplashScreen from "expo-splash-screen";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors } from "../theme/theme";
 
@@ -29,6 +30,8 @@ export default function RootLayout() {
     Manrope_700Bold,
   });
 
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
     if (fontsLoaded || fontError) SplashScreen.hideAsync();
   }, [fontsLoaded, fontError]);
@@ -41,7 +44,10 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
+          contentStyle: {
+            backgroundColor: colors.background,
+            paddingTop: insets.top + 16,
+          },
           headerTintColor: colors.textPrimary,
           headerShadowVisible: false,
         }}

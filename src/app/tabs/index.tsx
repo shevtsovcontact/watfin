@@ -39,7 +39,7 @@ export default function HomeScreen() {
     n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
+    <View style={styles.screen}>
       {/* Баланс за месяц */}
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Баланс за месяц</Text>
