@@ -204,7 +204,7 @@ export default function AddScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 24, gap: 8, paddingBottom: 48 },
+  content: { padding: 16, gap: 8, paddingBottom: 96 },
 
   segment: {
     flexDirection: "row",

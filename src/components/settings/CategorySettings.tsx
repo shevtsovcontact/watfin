@@ -213,7 +213,7 @@ export default function CategorySettings() {
 
         {/* ---------- Список расходов ---------- */}
         <Text style={styles.sectionTitle}>Расходы</Text>
-        <View style={styles.card}>
+        <View style={[styles.card, styles.expenseCard]}>
           {expenseCats.map((c) => (
             <CategoryRow key={c.id} category={c} onDelete={handleDelete} />
           ))}
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 96,
   },
 
   // кнопки добавления
@@ -427,6 +427,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.l,
     padding: 8,
+  },
+  expenseCard: {
     marginBottom: 24,
   },
 
