@@ -52,7 +52,7 @@ export default function AddScreen() {
       date: ymd,
     });
     router.replace({
-      pathname: "/",
+      pathname: "/tabs",
       params: { refresh: Date.now().toString() },
     });
   };
