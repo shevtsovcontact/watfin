@@ -52,7 +52,7 @@ export default function FloatingTabBar({
             {options.tabBarIcon?.({
               focused,
               color: focused ? colors.background : colors.textMuted,
-              size: 24,
+              size: 36,
             })}
           </TouchableOpacity>
         );
