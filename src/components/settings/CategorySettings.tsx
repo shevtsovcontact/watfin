@@ -8,17 +8,20 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
 import {
   DEFAULT_CATEGORIES,
   addCategory,
+  deleteCategory,
   getCategories,
   type Category,
   type CategoryType,
 } from "../../db/categories";
 import { colors, radius } from "../../theme/theme";
 import { type as typeStyles } from "../../theme/fonts";
+import ConfirmDialog from "../ConfirmDialog";
 
 // Палитра для новых категорий — берём случайный цвет
 const CATEGORY_COLORS = [
@@ -50,6 +53,8 @@ export default function CategorySettings() {
   const [pickerWidth, setPickerWidth] = useState(0);
   const [saving, setSaving] = useState(false);
 
+  const [toDelete, setToDelete] = useState<Category | null>(null);
+
   const loadCategories = async () => {
     setExpenseCats(await getCategories("expense"));
     setIncomeCats(await getCategories("income"));
@@ -73,6 +78,22 @@ export default function CategorySettings() {
       await loadCategories(); // перечитываем список после вставки
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = (category: Category) => {
+    setToDelete(category);
+  };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    try {
+      await deleteCategory(toDelete.id);
+      await loadCategories();
+    } catch (e) {
+      console.error("Не удалось удалить категорию:", e);
+    } finally {
+      setToDelete(null);
     }
   };
 
@@ -194,7 +215,7 @@ export default function CategorySettings() {
         <Text style={styles.sectionTitle}>Расходы</Text>
         <View style={styles.card}>
           {expenseCats.map((c) => (
-            <CategoryRow key={c.id} category={c} />
+            <CategoryRow key={c.id} category={c} onDelete={handleDelete} />
           ))}
         </View>
 
@@ -202,7 +223,7 @@ export default function CategorySettings() {
         <Text style={styles.sectionTitle}>Доходы</Text>
         <View style={styles.card}>
           {incomeCats.map((c) => (
-            <CategoryRow key={c.id} category={c} />
+            <CategoryRow key={c.id} category={c} onDelete={handleDelete} />
           ))}
         </View>
       </ScrollView>
@@ -242,26 +263,45 @@ export default function CategorySettings() {
           </Pressable>
         </View>
       </Modal>
+
+      <ConfirmDialog
+        visible={toDelete !== null}
+        title="Удалить категорию?"
+        message={toDelete?.name}
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </View>
   );
 }
 
-function CategoryRow({ category }: { category: Category }) {
+function CategoryRow({
+  category,
+  onDelete,
+}: {
+  category: Category;
+  onDelete: (category: Category) => void;
+}) {
   return (
-    <View style={styles.categoryRow}>
+    <TouchableOpacity
+      style={styles.categoryRow}
+      activeOpacity={0.6}
+      onLongPress={() => onDelete(category)}
+      delayLongPress={350}
+    >
       <View
         style={[
           styles.categoryIcon,
-          { backgroundColor: category.color ?? colors.surface },
+          { backgroundColor: category.color ?? "#64748B" },
         ]}
       >
         <Text style={styles.categoryEmoji}>{category.emoji || "•"}</Text>
       </View>
       <Text style={styles.categoryName}>{category.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

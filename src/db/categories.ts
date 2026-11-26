@@ -49,16 +49,40 @@ export async function addCategory(
   return result.lastInsertRowId;
 }
 
-export async function seedDefaultCategories(db: SQLiteDatabase) {
-  const count = await db.getFirstAsync<{ n: number }>(
-    "SELECT COUNT(*) as n FROM categories",
+export async function deleteCategory(id: number) {
+  const db = await getDb();
+  await db.runAsync(
+    "UPDATE transactions SET categoryId = NULL WHERE categoryId = ?",
+    [id],
   );
-  if ((count?.n ?? 0) > 0) return;
+  await db.runAsync("DELETE FROM categories WHERE id = ?", [id]);
+}
+
+export async function seedDefaultCategories(db: SQLiteDatabase) {
+  await db.runAsync(
+    "CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT)",
+  );
+
+  const seeded = await db.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'seeded'",
+  );
+  if (seeded) return;
 
   for (const c of DEFAULT_CATEGORIES) {
+    // не вставляем, если категория с таким именем и типом уже есть
+    const exists = await db.getFirstAsync<{ id: number }>(
+      "SELECT id FROM categories WHERE name = ? AND type = ?",
+      [c.name, c.type],
+    );
+    if (exists) continue;
+
     await db.runAsync(
       "INSERT INTO categories (name, type, emoji, color, is_default) VALUES (?, ?, ?, ?, 1)",
       [c.name, c.type, c.emoji ?? "", c.color ?? "#64748B"],
     );
   }
+
+  await db.runAsync(
+    "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('seeded', '1')",
+  );
 }
