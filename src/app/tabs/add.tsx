@@ -12,7 +12,7 @@ import { router, Stack } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { colors, radius, currency } from "../../theme/theme";
-import { fonts, type } from "../../theme/fonts";
+import { fonts, type as typeStyles } from "../../theme/fonts";
 import { getCategories, type Category } from "../../db/categories";
 import { addTransaction, type TxType } from "../../db/transactions";
 
@@ -68,143 +68,146 @@ export default function AddScreen() {
   );
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          headerTitle: "Новая операция",
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.textPrimary,
-          headerShadowVisible: false,
-        }}
-      />
-
-      {/* Тип: расход / доход */}
-      <View style={styles.segment}>
-        <Pressable
-          style={[
-            styles.segmentBtn,
-            txType === "expense" && styles.segmentExpense,
-          ]}
-          onPress={() => setTxType("expense")}
-        >
-          <Text
-            style={[
-              styles.segmentText,
-              txType === "expense" && styles.segmentTextActive,
-            ]}
-          >
-            Расход
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.segmentBtn,
-            txType === "income" && styles.segmentIncome,
-          ]}
-          onPress={() => setTxType("income")}
-        >
-          <Text
-            style={[
-              styles.segmentText,
-              txType === "income" && styles.segmentTextActive,
-            ]}
-          >
-            Доход
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Сумма */}
-      <View style={styles.amountBlock}>
-        <TextInput
-          style={{ ...styles.amountInput, color: amountColor }}
-          value={amount}
-          onChangeText={(t) => setAmount(t.replace(/[^\d.,]/g, ""))}
-          placeholder="0"
-          placeholderTextColor={colors.textMuted}
-          keyboardType="decimal-pad"
-          multiline={false}
-        />
-        <Text style={{ ...styles.currency, color: amountColor }}>
-          {currency}
-        </Text>
-      </View>
-
-      {/* Категории */}
-      <Text style={styles.sectionTitle}>Категория</Text>
-      <View style={styles.chips}>
-        {categories.map((c) => (
+    <View style={styles.container}>
+      <Text style={styles.title}>Операции</Text>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Тип: расход / доход */}
+        <View style={styles.segment}>
           <Pressable
-            key={c.id}
-            style={[styles.chip, categoryId === c.id && styles.chipActive]}
-            onPress={() => setCategoryId(c.id)}
+            style={[
+              styles.segmentBtn,
+              txType === "expense" && styles.segmentExpense,
+            ]}
+            onPress={() => setTxType("expense")}
           >
             <Text
               style={[
-                styles.chipText,
-                categoryId === c.id && styles.chipTextActive,
+                styles.segmentText,
+                txType === "expense" && styles.segmentTextActive,
               ]}
             >
-              {c.name}
+              Расход
             </Text>
           </Pressable>
-        ))}
-        {categories.length === 0 && (
-          <Text style={styles.hint}>
-            Категории пока пустые — добавим их в настройках
+          <Pressable
+            style={[
+              styles.segmentBtn,
+              txType === "income" && styles.segmentIncome,
+            ]}
+            onPress={() => setTxType("income")}
+          >
+            <Text
+              style={[
+                styles.segmentText,
+                txType === "income" && styles.segmentTextActive,
+              ]}
+            >
+              Доход
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Сумма */}
+        <View style={styles.amountBlock}>
+          <TextInput
+            style={{ ...styles.amountInput, color: amountColor }}
+            value={amount}
+            onChangeText={(t) => setAmount(t.replace(/[^\d.,]/g, ""))}
+            placeholder="0"
+            placeholderTextColor={colors.textMuted}
+            keyboardType="decimal-pad"
+            multiline={false}
+          />
+          <Text style={{ ...styles.currency, color: amountColor }}>
+            {currency}
           </Text>
+        </View>
+
+        {/* Категории */}
+        <Text style={styles.sectionTitle}>Категория</Text>
+        <View style={styles.chips}>
+          {categories.map((c) => (
+            <Pressable
+              key={c.id}
+              style={[styles.chip, categoryId === c.id && styles.chipActive]}
+              onPress={() => setCategoryId(c.id)}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  categoryId === c.id && styles.chipTextActive,
+                ]}
+              >
+                {c.name}
+              </Text>
+            </Pressable>
+          ))}
+          {categories.length === 0 && (
+            <Text style={styles.hint}>
+              Категории пока пустые — добавим их в настройках
+            </Text>
+          )}
+        </View>
+
+        {/* Дата */}
+        <Text style={styles.sectionTitle}>Дата</Text>
+        <Pressable style={styles.field} onPress={() => setShowPicker(true)}>
+          <Text style={styles.fieldText}>{fmtDate}</Text>
+        </Pressable>
+        {showPicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={(_, d) => {
+              setShowPicker(false);
+              if (d) setDate(d);
+            }}
+          />
         )}
-      </View>
 
-      {/* Дата */}
-      <Text style={styles.sectionTitle}>Дата</Text>
-      <Pressable style={styles.field} onPress={() => setShowPicker(true)}>
-        <Text style={styles.fieldText}>{fmtDate}</Text>
-      </Pressable>
-      {showPicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(_, d) => {
-            setShowPicker(false);
-            if (d) setDate(d);
-          }}
+        {/* Заметка */}
+        <Text style={styles.sectionTitle}>Заметка</Text>
+        <TextInput
+          style={[styles.field, styles.fieldInput]}
+          value={note}
+          onChangeText={setNote}
+          placeholder="Например: обед с друзьями"
+          placeholderTextColor={colors.textMuted}
         />
-      )}
 
-      {/* Заметка */}
-      <Text style={styles.sectionTitle}>Заметка</Text>
-      <TextInput
-        style={[styles.field, styles.fieldInput]}
-        value={note}
-        onChangeText={setNote}
-        placeholder="Например: обед с друзьями"
-        placeholderTextColor={colors.textMuted}
-      />
-
-      {/* Сохранить */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.saveBtn,
-          (!canSave || pressed) && styles.saveBtnDisabled,
-        ]}
-        onPress={save}
-      >
-        <Text style={styles.saveText}>Сохранить</Text>
-      </Pressable>
-    </ScrollView>
+        {/* Сохранить */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.saveBtn,
+            (!canSave || pressed) && styles.saveBtnDisabled,
+          ]}
+          onPress={save}
+        >
+          <Text style={styles.saveText}>Сохранить</Text>
+        </Pressable>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  title: {
+    ...typeStyles.h1,
+    color: colors.textPrimary,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 8, paddingBottom: 96 },
+  content: { paddingHorizontal: 16, gap: 8, paddingBottom: 96 },
 
   segment: {
     flexDirection: "row",
@@ -222,7 +225,7 @@ const styles = StyleSheet.create({
   segmentExpense: { backgroundColor: colors.expense },
   segmentIncome: { backgroundColor: colors.ice },
   segmentText: {
-    ...type.body,
+    ...typeStyles.body,
     fontFamily: fonts.medium,
     color: colors.textSecondary,
   },
@@ -241,28 +244,28 @@ const styles = StyleSheet.create({
   },
 
   amountInput: {
-    ...type.balance,
+    ...typeStyles.balance,
     color: colors.goldBright,
     flex: 1, // занимает всё свободное место, но не распирает блок
     textAlign: "right",
     padding: 0,
     paddingVertical: 0,
-    height: type.balance.fontSize * 1.2,
+    height: typeStyles.balance.fontSize * 1.2,
     textAlignVertical: "center",
     includeFontPadding: false,
   },
   currency: {
-    ...type.balance,
+    ...typeStyles.balance,
     color: colors.goldBright,
     marginLeft: 8,
-    height: type.balance.fontSize * 1.2,
-    lineHeight: type.balance.fontSize * 1.2,
+    height: typeStyles.balance.fontSize * 1.2,
+    lineHeight: typeStyles.balance.fontSize * 1.2,
     textAlignVertical: "center",
     includeFontPadding: false,
   },
 
   sectionTitle: {
-    ...type.caption,
+    ...typeStyles.caption,
     color: colors.textSecondary,
     marginTop: 8,
     marginBottom: 8,
@@ -278,17 +281,17 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipActive: { backgroundColor: colors.iceDeep, borderColor: colors.ice },
-  chipText: { ...type.body, color: colors.textPrimary },
+  chipText: { ...typeStyles.body, color: colors.textPrimary },
   chipTextActive: { color: colors.background, fontWeight: "700" },
-  hint: { ...type.caption, color: colors.textMuted },
+  hint: { ...typeStyles.caption, color: colors.textMuted },
 
   field: {
     backgroundColor: colors.surface,
     borderRadius: radius.m,
     padding: 14,
   },
-  fieldText: { ...type.body, color: colors.textPrimary },
-  fieldInput: { ...type.body, color: colors.textPrimary },
+  fieldText: { ...typeStyles.body, color: colors.textPrimary },
+  fieldInput: { ...typeStyles.body, color: colors.textPrimary },
 
   saveBtn: {
     backgroundColor: colors.gold,
@@ -298,5 +301,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   saveBtnDisabled: { backgroundColor: colors.goldDeep, opacity: 0.6 },
-  saveText: { ...type.h2, fontFamily: fonts.bold, color: colors.background },
+  saveText: {
+    ...typeStyles.h2,
+    fontFamily: fonts.bold,
+    color: colors.background,
+  },
 });
